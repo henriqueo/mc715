@@ -1,60 +1,38 @@
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
+import java.io.IOException;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.apache.zookeeper.KeeperException;
 
 class Main {
-	private static ExecutorService threadPool = Executors.newCachedThreadPool();
-	
 	public static void main(String[] args) {
-    	try
+    	if (args.length == 0)
     	{
-    		barrierTest("localhost:2181", 5);
+    		System.out.println("Por favor especifique o tamanho da barreira como parâmetro, e.g.:");
+    		System.out.println("java -jar barreira.jar 3");
+    		
+    		return;
+    	}
+		
+		try
+    	{
+    		barrierTest("localhost:2181", Integer.parseInt((args[0])));
     	}
     	catch (Exception e) {
     		System.out.println("Exceção: " + e.toString());
     	}
     }
     
-    private static void barrierTest(String host, int barrier_size) throws KeeperException, InterruptedException {
-        System.out.println("Criando barreira");
-    	Barrier b = new Barrier(host, "/barriernode", barrier_size);
+    private static void barrierTest(String host, int barrier_size) throws KeeperException, InterruptedException, IOException {
+    	System.out.println("Criando ou entrando em barreira de tamanho " + barrier_size);
+    	DoubleBarrier b = new DoubleBarrier(host, "/barriernode", barrier_size);
     	
-    	System.out.println("Criando barreira de " + barrier_size);
+    	System.out.println("- Eu depositei o dinheiro para o aluguel.");
     	
-    	ConcurrentSimpleList<String> nodes = new ConcurrentSimpleList<String>();
+    	b.enter();
     	
-    	// Entrar assincronamente com todos menos um e delay alto
-    	for (int i = 0; i < barrier_size - 1; i++) {
-    		enterNodeAsync(b, nodes, 1500);
-    	}
+    	System.out.println("- Chama o bixo pra ir pagar a conta que o aluguel está completo, e manda ele voltar que o filme vai começar.");
     	
-    	// Entra rapidamente com um nó e sai!
-    	String last_node = b.enter(0);
-    	System.out.println("entrou e vai pedir pra sair, entrando em DEAD LOCK");
-    	b.leave(last_node);
+    	b.leave();
     	
-    	System.out.println("ESTE CÓdigo não é executado!");
-    	
-    	// Agora vamos tentar sair com todos
-    	/*for (int i = 0; i < barrier_size - 1; i++) {
-    		leaveNodeAsync(b, nodes, nodes.get(i));
-    	}*/
-    	
-		// Mesmo 2 segundos depois, os outros nós ainda estão lá..
-		/*Thread.sleep(2000);
-		System.out.println();
-		System.out.println("2 segundos depois de " + barrier_size + " nós terem entrado e todos terem saído ainda há " + nodes.size() + " nós que não saíram de fato.");*/
-    }
-    
-    private static void enterNodeAsync(Barrier b, ConcurrentSimpleList<String> nodeList, int timeOut) throws KeeperException, InterruptedException {
-    	// Rodar numa background thread
-    	threadPool.submit(new BarrierEnterRunnable(b, nodeList, timeOut));
-    }
-    
-    private static void leaveNodeAsync(Barrier b, ConcurrentSimpleList<String> nodeList, String nodeName) throws KeeperException, InterruptedException {
-    	// Rodar numa background thread
-    	threadPool.submit(new BarrierLeaveRunnable(b, nodeList, nodeName));
+    	System.out.println("- Todos chegaram, liga a TV!");
     }
 }
