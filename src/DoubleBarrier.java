@@ -39,16 +39,6 @@ public class DoubleBarrier extends SyncPrimitive {
         }
     }
     
-    /*
-    public int countChildren() throws KeeperException, InterruptedException {
-    	return zk.getChildren(root, false).size();
-    }
-    
-    
-    public ZooKeeper getZK() {
-    	return zk;
-    }*/
-    
     private String oldestNode(List<String> nodes) {
     	int smallestNumber = Integer.MAX_VALUE;
     	String oldestNode = null;
@@ -69,7 +59,13 @@ public class DoubleBarrier extends SyncPrimitive {
     private void authorizeLeave() throws KeeperException, InterruptedException {
     	byte[] data = new byte[1];
     	data[0] = (byte)1;
-    	zk.setData(root, data, 0);
+    	zk.setData(root, data, -1);
+    }
+    
+    private void unauthorizeLeave() throws KeeperException, InterruptedException {
+    	byte[] data = new byte[1];
+    	data[0] = (byte)0;
+    	zk.setData(root, data, -1);
     }
     
     private boolean isLeaveAuthorized() throws KeeperException, InterruptedException {
@@ -167,7 +163,7 @@ public class DoubleBarrier extends SyncPrimitive {
             		mutex.wait(250);
             	}
             } else {
-            	// Apaga o barrier node!
+            	/*// Apaga o barrier node!
             	try
             	{
             		zk.delete(root, -1);
@@ -176,7 +172,9 @@ public class DoubleBarrier extends SyncPrimitive {
             	{
             		if (e.code() != KeeperException.Code.NONODE)
             			throw e;
-            	}
+            	}*/
+            	// Bloqueia a saída da primeira etapa da barreira
+            	unauthorizeLeave();
             	
             	System.out.println("Saí.");
                 return;

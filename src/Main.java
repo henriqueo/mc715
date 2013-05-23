@@ -25,14 +25,27 @@ class Main {
     	System.out.println("Criando ou entrando em barreira de tamanho " + barrier_size);
     	DoubleBarrier b = new DoubleBarrier(host, "/barriernode", barrier_size);
     	
-    	System.out.println("- Eu depositei o dinheiro para o aluguel.");
+    	String[] meses = new String[6];
+    	meses[0] = "Janeiro";
+    	meses[1] = "Fevereiro";
+    	meses[2] = "Março";
+    	meses[3] = "Abril";
+    	meses[4] = "Maio";
+    	meses[5] = "Junho";
     	
-    	b.enter();
-    	
-    	System.out.println("- Chama o bixo pra ir pagar a conta que o aluguel está completo, e manda ele voltar que o filme vai começar.");
-    	
-    	b.leave();
-    	
-    	System.out.println("- Todos chegaram, liga a TV!");
+    	for (int i = 0; i < meses.length; ++i) {
+    		System.out.println("=== Mês de " + meses[i] + " ===");
+	    	System.out.println("- Eu depositei o dinheiro para o aluguel.");
+	    	
+	    	b.enter();
+	    	
+	    	//Thread.sleep(3000);
+	    	
+	    	System.out.println("- Chama o bixo pra ir pagar a conta que o aluguel está completo, e manda ele voltar que o filme vai começar.");
+	    	
+	    	b.leave();
+	    	
+	    	System.out.println("- Todos chegaram, liga a TV!");
+    	}
     }
 }
