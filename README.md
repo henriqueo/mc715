@@ -1,3 +1,37 @@
+MC 715 - LABORATÓRIO DE SISTEMAS DISTRIBUÍDOS - PARTE 3 e 4
+
+1. INTRODUÇÃO
+
+	Na parte 1 utilizamos o código já implementado da barreira, explicitando um dos bugs contidos no código. Este se referia a um caso específico, onde tínhamos uma barreira simples, e vários processos entravam nela.
+	O último processo entrou na barreira, percebeu que atingiu o limite de processos da barreira e pediu para sair, apagando seu próprio nó. Com isso, entramos em um deadlock, onde o último processo está esperando os outros nós pedirem para sair, e os outros nós, por não terem percebido a existência do último processo, estão a espera dele.
+	Isto foi resolvido na parte 2 do trabalho, onde implementamos uma barreira simples e uma barreira dupla, que, utilizando um líder, controla a saída dos elementos.
+
+2. OBJETIVO
+
+	Na parte 3 do trabalho, faremos com que nossa barreira seja reutilizável, ou seja, possa ser reaproveitada para outras instâncias.
+	Na parte 4 do trabalho, faremos com que nossa barreira seja restrira, ou seja, não haja espaço para todos os processos entrarem nela, precisando criar uma “fila de espera”.
+
+
+3. METODOLOGIA
+
+	Para tornar nossa barreira reutilizável foi relativamente simples, pois, em nosso código original, simplesmente destruíamos a barreira ao final da execução.
+	Ao invés de destruí-la, vamos agora reiniciar o lider_approval para false, e deletar todos os nós filhos de /barrier, deixando apenas o /barrier com lider_approval = false, sendo este o estado inicial da barreira.
+	Para tornar nossa barreira restrita, devemos nos preocupar com alguns casos em específico:
+	1) size+1 processo dá enter, mas o líder já autorizou a saída.
+		Este é exatamente o caso mostrado no slide sobre barreiras restritas (http://www.ic.unicamp.br/~islene/1s2013-mc715/barreiras.pdf). Para solucionarmos este problema, verificaremos, ANTES DE CRIAR O NÓ, se o líder já autorizou a saída. Se sim, simplesmente o nó retorna, sem criar o seu nó. Caso contrário, ainda temos algumas condições de corridas a serem verificadas.
+2) size+1 processo dá enter, e o líder não autorizou a saída.
+Neste caso, pode ser que o número de processos já tenha atingido o máximo, mas o líder ainda não teve tempo de autorizar a saída. Para solucionar este caso, vamos verificar o número de processos. Caso seja size, o processo em questão simplesmente retorna. Caso contrário, continua o processamento.
+Neste ponto há ainda mais uma condição de corrida, onde, antes dessa verificação de número de children >= size, o líder tenha conseguido dar o approval e um processo tenha saído da barreira. Neste caso, o tamanho vai ser menor que size, então precisamos verificar novamente se o líder autorizou a saída de processos.
+
+	3) caso todos os processos entrem ao mesmo tempo, i.e., 5 processos entrando numa barreira de 4, exatamente ao mesmo tempo.
+		Neste caso, pode ser que todas as condições nos casos anteriores sejam cumpridas, e todos os 5 processos criem seus nós. Assim, devemos fazer uma verificação de número de nós criados logo após no zk.create, para que, se houver mais de 4 nós, todos os que tiverem 4 nós com id menores que as deles serem deletados, restando sempre apenas 4 nós.
+	Desta forma, com esses ajustes, conseguimos implementar uma barreira reutilizável e restrita.
+
+4. PROBLEMAS NA IMPLEMENTAÇÃO
+
+	Na apresentação passada foi descoberto um bug no nosso programa, que solucionamos nesta etapa. O bug acontecia quando um processo entrava enquanto os outros processos saíam. Isso foi resolvido no caso 1) desta etapa.
+	Também tivemos alguns problemas com a entrada de mais processos do que o limite da barreira, mas isso foi resolvido com o caso 3) desta etapa.
+
 MC 715 - LABORATÓRIO DE SISTEMAS DISTRIBUÍDOS - PARTE 2
 
 1. INTRODUÇÃO
