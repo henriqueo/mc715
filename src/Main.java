@@ -4,48 +4,45 @@ import org.apache.zookeeper.KeeperException;
 
 class Main {
 	public static void main(String[] args) {
-    	if (args.length == 0)
+    	if (args.length < 2)
     	{
-    		System.out.println("Por favor especifique o tamanho da barreira como parâmetro, e.g.:");
-    		System.out.println("java -jar barreira.jar 3");
+    		System.out.println("Por favor especifique o tamanho da barreira e o total de processos tentando utilizá-la, nesta ordem, como parâmetros, e.g.:");
+    		System.out.println("java -jar barreira.jar 3 5");
     		
     		return;
     	}
 		
 		try
     	{
-    		barrierTest("localhost:2181", Integer.parseInt((args[0])));
+    		barrierTest("localhost:2181", Integer.parseInt(args[0]), Integer.parseInt(args[1]));
     	}
     	catch (Exception e) {
     		System.out.println("Exceção: " + e.toString());
     	}
     }
     
-    private static void barrierTest(String host, int barrier_size) throws KeeperException, InterruptedException, IOException {
-    	System.out.println("Criando ou entrando em barreira de tamanho " + barrier_size);
+    private static void barrierTest(String host, int barrier_size, int total_procs) throws KeeperException, InterruptedException, IOException {
     	DoubleBarrier b = new DoubleBarrier(host, "/barriernode", barrier_size);
+    	SimpleBarrier syncBarrier = new SimpleBarrier(host, "/syncingbarrier", total_procs);
     	
-    	String[] meses = new String[6];
-    	meses[0] = "Janeiro";
-    	meses[1] = "Fevereiro";
-    	meses[2] = "Março";
-    	meses[3] = "Abril";
-    	meses[4] = "Maio";
-    	meses[5] = "Junho";
-    	
-    	for (int i = 0; i < meses.length; ++i) {
-    		System.out.println("=== Mês de " + meses[i] + " ===");
-	    	System.out.println("- Eu depositei o dinheiro para o aluguel.");
+    	for (int i = 1; i <= 7; ++i) {
+    		System.out.println("PARTIDA: " + i);
+	    	System.out.print ("- Vou correndo pegar um controle... ");
 	    	
-	    	b.enter();
+	    	boolean got_in_barrier = b.enter();
+	    	if (got_in_barrier == false) {
+	    		System.out.println("Droga! Cheguei tarde e fiquei de fora, vou esperar terminar o jogo.");
+	    	} else {
+	    		System.out.println("Consegui!");
+	    	}
 	    	
-	    	//Thread.sleep(3000);
+	    	System.out.println("NARRADOR: Os " + barrier_size + " jogadores jogam uma partida..");
 	    	
-	    	System.out.println("- Chama o bixo pra ir pagar a conta que o aluguel está completo, e manda ele voltar que o filme vai começar.");
+	    	if (got_in_barrier)
+	    		b.leave();
 	    	
-	    	b.leave();
-	    	
-	    	System.out.println("- Todos chegaram, liga a TV!");
+	    	System.out.println("- Acabou a partida! Vamos à competição pelos controles novamente!\n\n");
+	    	syncBarrier.Wait();
     	}
     }
 }
