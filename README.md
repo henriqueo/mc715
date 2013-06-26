@@ -1,3 +1,14 @@
+MC715 - LABORATORIO DE SISTEMAS DISTRIBUIDOS - PARTE 5 (FINAL)
+
+1. Para esta etapa a ideia seria realizar uma aplicacao utilizando as caracteristicas de barreiras desenvolvidas nas etapas anteriores.
+
+2. Campeonato
+	Utilizamos barreiras aninhadas para simular um campeonato, diversos times tentariam participar do mesmo, sendo que somente alguns conseguiriam uma vaga. Para isso utilizou-se uma barreira externa (restrita) para se garantir que uma quantidade limitada de times participasse da competicao.
+	Internamente foram utilizadas duas barreiras duplas que simulavam o primeiro e segundo turno do torneio, logo um time que ainda nao finalizou o primeiro turno nao poderia iniciar o segundo turno da competicao.
+
+3. Todas as alteracoes foram realizadas no arquivo Main.java ja que as classes de barreiras e suas caracteristicas ja haviam sido implementadas.
+
+
 MC 715 - LABORATÓRIO DE SISTEMAS DISTRIBUÍDOS - PARTE 3 e 4
 
 1. INTRODUÇÃO
